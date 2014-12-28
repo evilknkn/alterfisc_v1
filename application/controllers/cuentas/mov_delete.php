@@ -12,7 +12,7 @@ class Mov_delete extends CI_Controller
        
     }
     
-	/*public function deposito($id_empresa, $id_banco, $id_deposito)
+	public function deposito($id_empresa, $id_banco, $id_deposito)
 	{	
 
 		$this->load->model('cuentas/delete_movimiento_model', 'mov_model');
@@ -108,5 +108,5 @@ class Mov_delete extends CI_Controller
 		$this->session->set_flashdata('success', 'Movimiento interno eliminado correctamente');
 		redirect(base_url('cuentas/movimientos_internos/lista/'.$id_empresa.'/'.$id_banco));
 
-	}*/
+	}
 }
