@@ -5,7 +5,6 @@
             <span class="menu-item">Inicio</span>
         </a>
     </li>
-   
 <?php if($this->session->userdata('consulta')== 'inactive'): ?>
     <li>
         <a class="" href="<?=base_url('catalogos/banks')?>">
@@ -40,7 +39,7 @@
             <li><a href="<?=base_url('cuentas/comisiones')?>">Comisiones</a></li>
             
             <li><a href="<?=base_url('cuentas/gastos')?>">Gastos</a></li>
-            <li><a href="<?=base_url('cuentas/fondos')?>">Fondo</a></li>
+            <li><a href="<?=base_url('cuentas/caja_chica')?>">Caja chica</a></li>
             <!--<li><a href="form-components.html">Form Components</a></li>-->
         </ul>
     </li>
@@ -63,7 +62,7 @@
             <!--<li><a href="form-components.html">Form Components</a></li>-->
         </ul>
     </li>
-<?php endif;?> 
+<?php endif;?>
     <li >
         <a href="<?=base_url('login/logout')?>" class="text-center" >
             <i class="fa fa-power-off fa-lg" style="margin-top:10px"></i>

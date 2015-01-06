@@ -9,8 +9,12 @@ class Detalle_cuenta_model extends CI_Model
 	{
 		$this->db->from('ad_detalle_cuenta adc');
 		$this->db->where($filtro);
-		$this->db->where('fecha_movimiento >=', $fecha_ini);
-		$this->db->where('fecha_movimiento <=', $fecha_fin);
+		if(!empty($fecha_ini) )
+		{
+			$this->db->where('fecha_movimiento >=', $fecha_ini);
+			$this->db->where('fecha_movimiento <=', $fecha_fin);
+		}
+		
 		$this->db->order_by('adc.folio_mov', 'desc');
 		//$this->db->order_by('adc.fecha_movimiento','asc');
 		$query = $this->db->get();

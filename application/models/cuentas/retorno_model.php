@@ -13,6 +13,14 @@ class Retorno_model extends  CI_Model
 		return $query->result();
 	}
 
+	public function all_empresas()
+	{	$this->db->from('ad_catalogo_empresa');
+		$this->db->where(array('estatus' => 1, 'tipo_usuario' => 1));
+		$this->db->order_by('nombre_empresa');
+		$query = $this->db->get();
+		return $query->result();
+	}
+
 	public function detalle_retorno($filtro)
 	{
 		$this->db->from('ad_detalle_cuenta adc');
@@ -61,4 +69,19 @@ class Retorno_model extends  CI_Model
 		$query = $this->db->get();
 		return $query->result();
 	}
+
+	public function empresa_general_filtro($id_empresa)
+	{
+		$this->db->select('ace.id_empresa, ace.nombre_empresa, acb.id_banco, acb.nombre_banco');
+		$this->db->from('ad_catalogo_empresa ace');
+		$this->db->join('ad_bancos_empresa abe', 'abe.id_empresa = ace.id_empresa', 'inner');
+		$this->db->join('ad_catalogo_bancos acb', 'acb.id_banco = abe.id_banco', 'inner');
+		$this->db->where(array('ace.estatus' => 1,'ace.tipo_usuario' => 1, 'ace.id_empresa'=>$id_empresa));
+		
+		
+		$this->db->order_by('ace.nombre_empresa');
+		$query = $this->db->get();
+		return $query->result();
+	}
+
 }

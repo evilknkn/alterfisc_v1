@@ -72,4 +72,14 @@ class Empresas_model extends CI_Model
 		$this->db->where($filtro);
 		$this->db->update('ad_catalogo_empresa', array('estatus'=>0));
 	}
+
+	public function catalogo_empresas_lista($limit, $start)
+	{	
+		//_where('ad_catalogo_empresa', array('estatus' => 1));
+		$this->db->from('ad_catalogo_empresa');
+		$this->db->where('estatus', 1);
+		$this->db->limit($limit, $start);
+		$query = $this->db->get();
+		return $query->result();
+	}
 }

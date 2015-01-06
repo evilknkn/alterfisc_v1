@@ -192,6 +192,54 @@ class Salida extends CI_Controller
 			$this->load->view('layer/layerout', $data);
 		endif;
 	}
+
+	public function insertar_salida_caja($id_empresa, $id_banco)
+	{
+		$this->load->model('cuentas/salida_model');
+		$this->load->model('cuentas/detalle_cuenta_model');
+		$this->load->model('cuentas/depositos_model');
+
+		$empresa = $this->depositos_model->empresa(array('ace.id_empresa' => $id_empresa));
+
+		$this->form_validation->set_rules('fecha_salida', 'fecha de salida', 'required|callback_fecha_limite');
+		$this->form_validation->set_rules('monto_salida', 'monto de salida', 'required');
+		//$this->form_validation->set_rules('folio_salida', 'folio de salida', 'required|trim|callback_valida_folio');
+		$this->form_validation->set_rules('detalle_salida', 'detalle de salida', 'required');
+
+		if($this->form_validation->run()):
+			$folio_ant = $this->depositos_model->numero_folio('CAJA', $id_empresa);
+			
+			$folio_mov = generar_folio('CAJA', ($folio_ant+1) );
+
+			$array= array(	'fecha_salida' 	=>	formato_fecha_ddmmaaaa($this->input->post('fecha_salida')), 
+							'monto_salida'	=>	$this->input->post('monto_salida'),
+							'folio_salida' 	=>	$folio_mov,
+							'detalle_salida'=>	$this->input->post('detalle_salida'));
+
+			$reg = $this->salida_model->insert_salida($array);
+
+			$datos = array(	'id_empresa'		=>	$id_empresa,
+							'id_banco'			=>	$id_banco,
+							'id_movimiento'		=> 	$reg,
+							'fecha_movimiento'	=> 	formato_fecha_ddmmaaaa($this->input->post('fecha_salida')),
+							'folio_mov'			=> 	$folio_mov,
+							'tipo_movimiento'	=>	'salida');
+
+			$this->detalle_cuenta_model->insert_movimiento($datos);
+
+			$this->session->set_flashdata('success', 'Salida registrada correctamente');
+			redirect(base_url('cuentas/caja_chica/'.$id_empresa.'/'.$id_banco));
+
+		else:
+			$data = array(	'menu' 	=>  'menu/menu_admin',
+							'body'	=>	'admin/cuentas/salida/form_salida_persona');
+
+			$data['id_banco']	= $id_banco;
+			$data['empresa']	= $empresa;
+
+			$this->load->view('layer/layerout', $data);
+		endif;
+	}
 	/// Callback
 	function valida_folio($folio)
 	{	

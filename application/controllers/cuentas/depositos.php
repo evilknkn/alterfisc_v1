@@ -194,7 +194,7 @@ class Depositos extends CI_controller
 
 		$empresa = $this->depositos_model->empresa(array('ace.id_empresa' => $id_empresa, 'acb.id_banco' => $id_banco));
 
-		$this->form_validation->set_rules('folio_pago' ,'folio de pago', 'required|trim');
+		$this->form_validation->set_rules('folio_pago' ,'folio de pago', 'required|trim|callback_unique_folio');
 		$this->form_validation->set_rules('monto' ,'monto', 'required');
 		$this->form_validation->set_rules('empresa_retorno' ,'empresa de retorno', 'required');
 		$this->form_validation->set_rules('id_banco' ,'banco', 'required');
@@ -431,14 +431,14 @@ class Depositos extends CI_controller
 		endif;
 	}
 
-	function fecha_pago()
+	function fecha_pago($fecha_pago)
 	{	
-		$fecha_insert = formato_fecha_ddmmaaaa($this->input->post('fecha_pago'));
+		$fecha_insert = formato_fecha_ddmmaaaa($fecha_pago);
 		$date_now = date('Y/m/d');
 		$date_msg = date('d/m/Y');
 		//print_r($fecha_insert);exit;
 		if($fecha_insert > $date_now):
-			$this->form_validation->set_message('fecha_limite', 'La fecha no puede ser mayor a el día de hoy ('.$date_msg.').');
+			$this->form_validation->set_message('fecha_pago', 'La fecha no puede ser mayor a el día de hoy ('.$date_msg.').');
             return FALSE;
 		else:
 			return TRUE;

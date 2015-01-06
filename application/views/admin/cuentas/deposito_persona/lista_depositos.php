@@ -30,7 +30,7 @@
                 $total_saldo = 0;
 				foreach($empresas as $empresa): 
 
-                $depto = montos($db_mov, $empresa->id_empresa, $empresa->id_banco, 'deposito');
+                $depto  = montos($db_mov, $empresa->id_empresa, $empresa->id_banco, 'deposito');
                 $salida = montos($db_mov, $empresa->id_empresa, $empresa->id_banco, 'salida');
 
                 $saldo = $depto - $salida; 

@@ -22,7 +22,6 @@
 <!--         <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">-->
         <link href="<?=base_url('assets')?>/font-awesome-4.2.0/css/font-awesome.min.css" rel="stylesheet">
         <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-        <!--<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>-->
 
     </head>
     <body id="skin-tectile">
@@ -127,8 +126,19 @@
         </section>
         
         <!-- Javascript Libraries -->
+        <link rel="stylesheet" href="<?=base_url('assets')?>/js/themes/blue/style.css" type="text/css" id="" media="print, projection, screen" />
+        <script src="<?=base_url('assets')?>/js/jquery-latest.js"></script>
+        <script src="<?=base_url('assets')?>/js/jquery.tablesorter.js"></script>
+
+        <script type="text/javascript" src="<?=base_url('assets')?>/js/addons/pager/jquery.tablesorter.pager.js"></script>
+
         <!-- jQuery -->
-        <script src="<?=base_url('assets')?>/js/jquery.min.js"></script> <!-- jQuery Library -->
+        <?php if($this->uri->segment(2) != 'corps') {?>
+            <?php if($this->uri->segment(3) != 'pendiente_retorno_general') {?>
+       <script src="<?=base_url('assets')?>/js/jquery.min.js"></script> <!- jQuery Library -->
+            <?}?>
+       <?}?>
+
         <script src="<?=base_url('assets')?>/js/jquery-ui.min.js"></script> <!-- jQuery UI -->
         <script src="<?=base_url('assets')?>/js/jquery.easing.1.3.js"></script> <!-- jQuery Easing - Requirred for Lightbox + Pie Charts-->
 
@@ -143,7 +153,7 @@
 
         <script src="<?=base_url('assets')?>/js/sparkline.min.js"></script> <!-- Sparkline - Tiny charts -->
         <script src="<?=base_url('assets')?>/js/easypiechart.js"></script> <!-- EasyPieChart - Animated Pie Charts -->
-        <script src="<?=base_url('assets')?>/js/charts.js"></script> <!-- All the above chart related functions -->
+        <!--<script src="<?=base_url('assets')?>/js/charts.js"></script> < All the above chart related functions -->
 
         <!-- Map -->
 

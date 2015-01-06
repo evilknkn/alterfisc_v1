@@ -474,7 +474,7 @@
 	function generar_folio($clave, $numero) {
 	
 	if($numero < 10) {
-		return $clave.'-0000'.$numero;
+		return $clave.'-00000'.$numero;
 	} else if($numero < 100) {
 		return $clave.'-0000'.$numero;
 	} else if($numero < 1000) {
@@ -488,7 +488,7 @@
 	}
 	}
 
-	function hace_tiempo($valor){
+function hace_tiempo($valor){
 
 // FORMATOS:
 // segundos    desde 1970 (función time())        hace_tiempo('12313214');

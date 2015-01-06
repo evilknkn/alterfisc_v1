@@ -13,6 +13,7 @@
                     <th>Fecha</th>
                     <th>Folio</th>
                     <th>Monto</th>
+                    <th>Descripción salida</th>
                 </tr>
             </thead>
             <tbody>
@@ -22,6 +23,7 @@
                         <td><?=formato_fecha_ddmmaaaa($movimiento->fecha_movimiento)?> </td>
                         <td><?=$movimiento->folio_mov?></td>
                         <td>$<?=convierte_moneda($movimiento->monto_salida)?></td>
+                        <td><?=$movimiento->detalle_salida?></td>
                     </tr>
                 <?php } ?>
             <?php else:?>

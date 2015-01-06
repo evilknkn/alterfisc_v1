@@ -48,13 +48,26 @@ class Pendiente_retorno extends CI_Controller
 		$this->load->model('cuentas/retorno_model');
 		$this->load->helper('funciones_externas');
 
+		if($this->input->post('id_empresa'))
+		{
+			$id_empresa = $this->input->post('id_empresa');
+		}
+
+
 		$data = array(	'menu' 	=>  'menu/menu_admin',
 						'body'	=>	'admin/cuentas/pendiente_retorno/retorno_pendiente_general');
 
-		$data['empresas'] = $this->retorno_model->empresas_general();
+		$data['catalogo_empresas'] = $this->retorno_model->all_empresas();
+		if(isset($id_empresa) and $id_empresa >0):
+			$data['empresas'] = $this->retorno_model->empresa_general_filtro($id_empresa);
+		else:
+			$data['empresas'] = $this->retorno_model->empresas_general();
+		endif;
 		$data['db'] = $this->retorno_model;
 
 		$this->load->view('layer/layerout', $data);
 	}
+
+
 
 }

@@ -11,16 +11,48 @@ class Corps extends CI_Controller
         }
     }
 
+    public function listar_empresas()
+    {	
+    	$this->load->model('catalogo/empresas_model');
+		$this->load->helper('funciones_externas_helper');
+    	$start = $this->input->post('ini_start');
+    	$empresas = $this->empresas_model->catalogo_empresas_lista(5, $start);
+
+    	echo json_encode($empresas);
+    }
+
 	public function index()
 	{	
 		$this->load->model('catalogo/empresas_model');
 		$this->load->helper('funciones_externas_helper');
+		
+		$data = array(	'menu' 	=>  'menu/menu_admin',
+						'body'	=>	'admin/empresas/lista_empresas');
+
+		$data['bancos'] = $this->empresas_model->catalogo_bancos();
+		$data['empresas'] = $this->empresas_model->catalogo_empresas();
+		$data['db']		= $this->empresas_model;
+
+			$this->load->view('layer/layerout', $data);
+	}
+
+	public function add_empresa_persona()
+	{
+
+		$this->load->model('catalogo/empresas_model');
+		$this->load->helper('funciones_externas_helper');
 
 		$this->form_validation->set_rules('nombre_empresa', 'nombre de empresa', 'required');
+		$this->form_validation->set_rules('tipo_cuenta', 'tipo de cuenta', 'required');
+		if($this->input->post('tipo_cuenta')==2):
+			$this->form_validation->set_rules('clave_cuenta', 'clave de cuenta para folio', 'required');
+		endif;	
 		$this->form_validation->set_message('required', 'El campo %s es requerido');
-
+	
 		if($this->form_validation->run()):
-			$array = array('nombre_empresa' 	=> $this->input->post('nombre_empresa'),
+			$array = array('nombre_empresa' 	=> 	$this->input->post('nombre_empresa'),
+							'tipo_usuario'		=> 	$this->input->post('tipo_cuenta'),
+							'clave_cta'			=>	$this->input->post('clave_cuenta'),
 							'clabe_bancaria' 	=>	$this->input->post('clabe'),
 								'no_cuenta'		=> 	$this->input->post('no_cuenta'),
 								'estatus'		=>	1);
@@ -32,12 +64,12 @@ class Corps extends CI_Controller
 
 			$this->empresas_model->create_vinculo($datos);
 
-			$this->session->set_flashdata('success', 'La empresa se guardo correctamente');
+			$this->session->set_flashdata('success', 'La empresa se registro correctamente');
 			redirect(base_url('catalogos/corps'));
 
 		else:
 			$data = array(	'menu' 	=>  'menu/menu_admin',
-							'body'	=>	'admin/empresas/lista_empresas');
+							'body'	=>	'admin/empresas/reg_catalogo_empresa');
 
 			$data['bancos'] = $this->empresas_model->catalogo_bancos();
 			$data['empresas'] = $this->empresas_model->catalogo_empresas();
@@ -45,6 +77,8 @@ class Corps extends CI_Controller
 
 			$this->load->view('layer/layerout', $data);
 		endif;
+
+
 	}
 
 	public function add_banco()
@@ -101,44 +135,5 @@ class Corps extends CI_Controller
 
         $this->session->set_flashdata('success', 'Empresa elimada correctamente');
         redirect(base_url('catalogos/corps'));
-	}
-
-	public function agregar_empresa()
-	{
-		$this->load->model('catalogo/empresas_model');
-		$this->load->helper('funciones_externas_helper');
-
-		$this->form_validation->set_rules('nombre_empresa', 'nombre de empresa', 'required');
-		$this->form_validation->set_rules('tipo_cuenta', ' Tipo de cuenta', 'required');
-		$this->form_validation->set_rules('id_banco', ' banco', 'required');
-		if($this->input->post('tipo_cuenta') == '2')
-			$this->form_validation->set_message('required', 'El campo %s es requerido');
-
-		if($this->form_validation->run()):
-			$array = array('nombre_empresa' 	=> $this->input->post('nombre_empresa'),
-							'clabe_bancaria' 	=>	$this->input->post('clabe'),
-								'no_cuenta'		=> 	$this->input->post('no_cuenta'),
-								'estatus'		=>	1);
-
-			$req = $this->empresas_model->insert_empresa($array);
-
-			$datos = array('id_banco' 		=>	$this->input->post('id_banco'),
-							'id_empresa'	=>	$req);
-
-			$this->empresas_model->create_vinculo($datos);
-
-			$this->session->set_flashdata('success', 'La empresa se guardo correctamente');
-			redirect(base_url('catalogos/corps'));
-
-		else:
-			$data = array(	'menu' 	=>  'menu/menu_admin',
-							'body'	=>	'admin/empresas/form_empresa');
-
-			$data['bancos'] = $this->empresas_model->catalogo_bancos();
-			$data['empresas'] = $this->empresas_model->catalogo_empresas();
-			$data['db']		= $this->empresas_model;
-
-			$this->load->view('layer/layerout', $data);
-		endif;
 	}
 }

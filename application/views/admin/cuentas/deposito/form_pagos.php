@@ -22,39 +22,43 @@
 
     <div class="form-group">
         <label class="control-label col-sm-4 col-xs-4"> Folio</label>
-        <div class="col-sm-5 col-xs-5">
-           <input type="text" class="form-control" name="folio_pago" value="<?=set_value('folio_pago')?>" >
+        <div class="col-sm-8 col-xs-8">
+            <div class="col-sm-5 col-xs-5">
+               <input type="text" class="form-control" name="folio_pago" value="<?=set_value('folio_pago')?>" >
+            </div>
+    		<div class="col-sm-12 col-xs-12">&nbsp;</div>
+    		<div class="col-sm-4 col-xs-4"><?=form_error('folio_pago')?></div>
         </div>
-		<div class="col-sm-12 col-xs-12">&nbsp;</div>
-		<div class="col-sm-4 col-xs-4"><?=form_error('folio_pago')?></div>
     </div>
 
-    <?=form_error('folio_pago')?>
 
     <div class="form-group">
         <label class="control-label col-sm-4 col-xs-4"> Monto</label>
-        <div class="col-sm-5 col-xs-5">
-            <input type="text" name="monto" class="form-control" value="<?=set_value('monto')?>"  >
+        <div class="col-sm-8 col-xs-8">
+            <div class="col-sm-5 col-xs-5">
+                <input type="text" name="monto" class="form-control" value="<?=set_value('monto')?>"  >
+            </div>
+    		<div class="col-sm-12 col-xs-12">&nbsp;</div>
+    		<div class="col-sm-4 col-xs-4"><?=form_error('monto')?></div>
         </div>
-		<div class="col-sm-12 col-xs-12">&nbsp;</div>
-		<div class="col-sm-4 col-xs-4"><?=form_error('monto')?></div>
     </div>
 
     <div class="form-group">
         <label class="control-label col-sm-4 col-xs-4"> Empresa retorno</label>
-        <div class="col-sm-5 col-xs-5">
-            <select class="form-control" name="empresa_retorno" id="empresa_retorno"  >
-                <option value=""> Seleccione un cliente</option>
-                <?php foreach($empresas as $empresa):?>
-                    <option value="<?=$empresa->id_empresa?>"><?=$empresa->nombre_empresa;?></option>
-                <?php endforeach;?>
-            </select>
+        <div class="col-sm-8 col-xs-8">
+            <div class="col-sm-5 col-xs-5">
+                <select class="form-control" name="empresa_retorno" id="empresa_retorno"  >
+                    <option value=""> Seleccione un cliente</option>
+                    <?php foreach($empresas as $empresa):?>
+                        <option value="<?=$empresa->id_empresa?>"><?=$empresa->nombre_empresa;?></option>
+                    <?php endforeach;?>
+                </select>
+            </div>
+    		<div class="col-sm-12 col-xs-12">&nbsp;</div>
+    		<div class="col-sm-4 col-xs-4"><?=form_error('empresa_retorno')?></div>
         </div>
-		<div class="col-sm-12 col-xs-12">&nbsp;</div>
-		<div class="col-sm-4 col-xs-4"><?=form_error('empresa_retorno')?></div>
     </div>
 
-    <?=form_error('empresa_retorno')?>
 
     <div class="form-group">
         <label class="control-label col-sm-4 col-xs-4"> Banco</label>
@@ -65,20 +69,21 @@
             </select>
         </div>
     </div>
-    <?=form_error('id_banco')?>
 
     <div class="form-group">
         <label class="control-label col-sm-4 col-xs-4"> Fecha pago</label>
-        <div class="col-sm-3 col-xs-3">
-            <div class="input-icon datetime-pick date-only">
-                <input data-format="dd/MM/yyyy" type="text" id="fecha_pago" name="fecha_pago" class="form-control input-sm" placeholder="dd/mm/aaaa" value="<?=set_value('fecha_pago')?>" />
-                <span class="add-on">
-                    <i class="sa-plus"></i>
-                </span>
+        <div class="col-sm-8 col-xs-8">
+            <div class="col-sm-3 col-xs-3">
+                <div class="input-icon datetime-pick date-only">
+                    <input data-format="dd/MM/yyyy" type="text" id="fecha_pago" name="fecha_pago" class="form-control input-sm" placeholder="dd/mm/aaaa" value="<?=set_value('fecha_pago')?>" />
+                    <span class="add-on">
+                        <i class="sa-plus"></i>
+                    </span>
+                </div>
             </div>
+    		<div class="col-sm-12 col-xs-12">&nbsp;</div>
+    		<div class="col-sm-4 col-xs-4"><?=form_error('fecha_pago')?></div>
         </div>
-		<div class="col-sm-12 col-xs-12">&nbsp;</div>
-		<div class="col-sm-4 col-xs-4"><?=form_error('fecha_pago')?></div>
     </div>
 
     <div class="form-group">
