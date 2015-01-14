@@ -121,70 +121,17 @@
                                 <a data-toggle="modal" href="#modalPagos" class="btn btn-sm" onclick="pagos(<?=$id_empresa?>,<?=$id_banco?>, <?=$deposito->id_deposito?>)">Ver Pagos</a>
                             </td>
                             <td class="text-center">
-                                <a href="<?=base_url('cuentas/depositos/editar_deposito/'.$id_empresa.'/'.$id_banco.'/'.$deposito->id_deposito)?>" >
+                                <a href="<?=base_url('cuentas/depositos/editar_deposito/'.$id_empresa.'/'.$id_banco.'/'.$movimiento->id_detalle.'/'.$movimiento->id_movimiento)?>" >
                                     <i class="fa fa-edit fa-lg"></i>
                                 </a>
                             </td>
                             <td class="text-center">
-                                <a href="<?=base_url('cuentas/mov_delete/deposito/'.$id_empresa.'/'.$id_banco.'/'.$deposito->id_deposito)?>" onclick="return confirm('¿Esta seguro que quiere eliminar el depósito?');" data-toggle-title="Haga clic aquí para borrar depósito">
+                                <a href="<?=base_url('cuentas/mov_delete/deposito/'.$id_empresa.'/'.$id_banco.'/'.$movimiento->id_detalle.'/'.$movimiento->id_movimiento)?>" onclick="return confirm('¿Esta seguro que quiere eliminar el depósito?');" data-toggle-title="Haga clic aquí para borrar depósito">
                                     <i class="fa fa-trash fa-lg"></i>
                                 </a>
                             </td>
                        </tr>
-                <?php }else if( $type_mov == 'deposito_interno' ) 
-                        { 
-                        $deposito = lista_depositos($db_mov, $movimiento->folio_mov ); 
-                        //print_r($movimiento->folio_mov);exit;
-						$cantidad_deposito = $deposito->monto_deposito;
-						$total_depto = $total_depto + $cantidad_deposito;
-                        ?>
-                        <tr>
-                            <td><?=formato_fecha_ddmmaaaa($movimiento->fecha_movimiento)?></td>
-							
-                            <td>$<?=convierte_moneda($cantidad_deposito)?></td>
-							<td></td>
-                            <td class="text-center"><?=$movimiento->folio_mov?></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td colspan="2"></td>
-                            <td>Movimiento interno</td>
-                            <td></td>
-                       </tr>
-                  <?php } else
-                            {
-                                $salida = lista_salidas($db_mov, $movimiento->folio_mov);
-								$total_sal = $total_sal + $salida->monto_salida;
-                                ?>
-                            <tr>
-                                <td><?=formato_fecha_ddmmaaaa($movimiento->fecha_movimiento)?></td>
-								<td></td>
-                                <td>$<?=convierte_moneda($salida->monto_salida)?></td>
-                                
-                                <td class="text-center"><?=$movimiento->folio_mov?></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td colspan="2"></td>
-                                <td class="text-center">
-                                    <?php if($type_mov == 'salida'){?>
-                                    <a href="<?=base_url('cuentas/salida/editar_salida/'.$id_empresa.'/'.$id_banco.'/'.$salida->id_salida)?>"  data-toggle-title="Haga clic aquí para borrar depósito">
-                                        <i class="fa fa-edit fa-lg"></i>
-                                    </a>
-                                   <?php }?> 
-                                </td>
-                                <td class="text-center">
-                                    <?php if($type_mov == 'salida'){?>
-                                    <a href="<?=base_url('cuentas/mov_delete/salida/'.$id_empresa.'/'.$id_banco.'/'.$salida->id_salida)?>" onclick="return confirm('¿Esta seguro que quiere eliminar esta salida?');" data-toggle-title="Haga clic aquí para borrar depósito">
-                                        <i class="fa fa-trash fa-lg"></i>
-                                    </a>
-                                   <?php }?>
-                                </td>
-                           </tr>
-                            <?php } ?>
+                <?php }?>
             <?php endforeach;?>
             <?php }else{?>
                 <tr>

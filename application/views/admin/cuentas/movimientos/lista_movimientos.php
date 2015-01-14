@@ -72,7 +72,7 @@
         </table>
 
         <div class="text-center">
-             <?php if($this->session->userdata('consulta')=='active'):?>
+             <?php if($this->session->userdata('consulta')=='inactive'):?>
             <a class="btn" href="<?=base_url('cuentas/depositos/detalle_cuenta/'.$id_empresa.'/'.$id_banco)?>"> 
             <?php else:?>
             <a class="btn" href="<?=base_url($this->session->userdata('base_perfil'))?>">
