@@ -22,13 +22,15 @@ function cliente_asignado($db, $id_deposito)
 	return  $res->id_cliente;
 }
 
-function montos($db, $id_empresa, $id_banco, $tipo_mov)
+function montos($db, $id_empresa, $id_banco, $tipo_mov, $fecha_ini = null, $fecha_fin = null)
 {	
 
 	$total_monto =0;
-	
-	$filtro = array('adc.id_empresa' => $id_empresa, 'adc.id_banco' => $id_banco,'adc.tipo_movimiento' => $tipo_mov);
-	
+	if($fecha_ini != null):
+		$filtro = array('adc.id_empresa' => $id_empresa, 'adc.id_banco' => $id_banco,'adc.tipo_movimiento' => $tipo_mov, 'fecha_movimiento >=' => $fecha_ini, 'fecha_movimiento <=' => $fecha_fin);
+	else:
+		$filtro = array('adc.id_empresa' => $id_empresa, 'adc.id_banco' => $id_banco,'adc.tipo_movimiento' => $tipo_mov);
+	endif;
 		$movimientos = $db->lista_movimiento($filtro, $tipo_mov);
 		
 	if(!empty($movimientos)):
@@ -79,9 +81,14 @@ function create_file($carpeta){
 
 function genera_comision($db, $id_cliente, $deposito)
 {	
+
 	if($id_cliente != 0 ):
 		$res = $db->datos_cliente(array('id_cliente'=> $id_cliente));
-		$comision = (($deposito / 1.16 ) * $res->comision);
+		if($res->tipo_cliente == 'A'):
+			$comision = ($deposito  * $res->comision);
+		else:
+			$comision = (($deposito / 1.16 ) * $res->comision);
+		endif;
 	else:
 		$comision = 0;
 	endif;
@@ -102,22 +109,35 @@ function total_pagos($db, $id_empresa, $id_banco, $id_deposito)
 	return ($total_pagos);
 }
 
-function genera_comision_total($db, $id_cliente, $comision)
+function genera_comision_total($db, $id_cliente, $comision, $tipo_cliente = null)
 {	
 	$depositos = $db->lista_depositos(array('id_cliente' => $id_cliente));
 	
 	$total_comision = 0;
 	foreach($depositos as $deposito):
-		$comision_depto = (($deposito->monto_deposito / 1.16 ) * $comision);
+		if( $tipo_cliente == 'A'):
+			$comision_depto = (($deposito->monto_deposito  ) * $comision);
+		else:
+			$comision_depto = (($deposito->monto_deposito / 1.16 ) * $comision);
+		endif;
+
 		$total_comision = $total_comision + $comision_depto;
 	endforeach;
 
 	return $total_comision;
 }
 
-function genera_total_depositos($db, $id_empresa, $id_banco)
+function genera_total_depositos($db, $id_empresa, $id_banco, $fecha_ini = null, $fecha_fin = null)
 {	
-	$filtro=array('adc.id_empresa'=>$id_empresa, 'adc.id_banco' =>$id_banco, 'adc.tipo_movimiento' => 'deposito');
+	
+	if($fecha_ini!=null):
+		$filtro=array('adc.id_empresa'=>$id_empresa,
+		 'adc.id_banco' =>$id_banco, 'adc.tipo_movimiento' => 'deposito',
+		 'fecha_movimiento >= ' => $fecha_ini,
+		 'fecha_movimiento <=' => $fecha_fin);
+	else:
+		$filtro=array('adc.id_empresa'=>$id_empresa, 'adc.id_banco' =>$id_banco, 'adc.tipo_movimiento' => 'deposito');
+	endif;
 	$depositos = $db->depositos_empresa($filtro);
 
 	$total_depositos = 0 ;
@@ -157,23 +177,47 @@ function gastos_cuenta($db, $id_empresa, $id_banco)
 }
 
 function fechas_rango_inicio($month)
-{
+{	
+	$fecha_anterior = '';
+
 	if($month == '01' or $month == '03' or $month =='04' or $month == '07' or $month == '08' or $month == '10' or $month == '12')
-	{
+	{	
+		// if($month < 10){
+		// 	$fecha_anterior = ($month == '01') ? (date('Y') -1).'-12-15':  date('Y').'-0'.($month - 1).'-15'; 
+		// }else{
+		// 	$fecha_anterior = ($month == '01') ? (date('Y') -1).'-12-15':  date('Y').($month - 1).'-15'; 
+		// }
+
 		$fecha['fecha_inicio'] = date('Y-m-').'01';
 		$fecha['fecha_fin'] = date('Y-m-').'31';
+
 	}elseif($month == '04' or $month == '06' or $month == '09' or $month == '11'){
+		// if($month < 10){
+		// 	$fecha_anterior = ($month == '01') ? (date('Y') -1).'-12-15':  date('Y').'-0'.($month - 1).'-15'; 
+		// }else{
+		// 	$fecha_anterior = ($month == '01') ? (date('Y') -1).'-12-15':  date('Y').($month - 1).'-15'; 
+		// }
+
 		$fecha['fecha_inicio'] = date('Y-m-').'01';
 		$fecha['fecha_fin'] = date('Y-m-').'30';
 	}else{
+		// if($month < 10){
+		// 	$fecha_anterior = ($month == '01') ? (date('Y') -1).'-12-15':  date('Y').'-0'.($month - 1).'-15'; 
+		// }else{
+		// 	$fecha_anterior = ($month == '01') ? (date('Y') -1).'-12-15':  date('Y').($month - 1).'-15'; 
+		// }
 		$fecha['fecha_inicio'] = date('Y-m-').'01';
 		$fecha['fecha_fin'] = date('Y-m-').'28';
 	}
 
 	return $fecha;
 }
+
+
+
 function fechas_rango_mes($month)
 {
+
 	if($month == '01' or $month == '03' or $month =='04' or $month == '07' or $month == '08' or $month == '10' or $month == '12')
 	{
 		$fecha['fecha_inicio'] = '01';
@@ -185,7 +229,7 @@ function fechas_rango_mes($month)
 		$fecha['fecha_inicio'] = '01';
 		$fecha['fecha_fin'] = '28';
 	}
-
+///	print_r($fecha);
 	return $fecha;
 }
 
@@ -200,52 +244,68 @@ function cliente_asignado_deposito($db, $id_cliente)
 	return $nombre_cliente;
 }
 
-function depositos_pendiente_retorno_gral($db, $id_empresa, $id_banco)
+function depositos_pendiente_retorno_gral($db, $id_empresa, $id_banco, $fecha_ini = null, $fecha_fin = null)
 {	
+	if($fecha_ini == null):
 	$filtro = array('adc.id_empresa' => $id_empresa, 'adc.id_banco' => $id_banco, 'adc.tipo_movimiento' => 'deposito');
+	else:
+	$filtro = array('adc.id_empresa' => $id_empresa, 'adc.id_banco' => $id_banco, 'adc.tipo_movimiento' => 'deposito', 'adc.fecha_movimiento >=' => $fecha_ini, 'adc.fecha_movimiento <=' => $fecha_fin);
+	endif;
 	$depositos = $db->detalle_retorno($filtro);
 	return $depositos;
 }
 
-function buscar_mes_txt($month)
+function consulta_saldo_anterior($db, $month, $id_empresa, $id_banco)
+{	
+	$total_saldo = 0;
+	$fecha_ant = fechas_rango_mes($month);
+	$year = date('Y');
+    if($month == '12'): $year =  $year - 1 ; endif;
+    $fecha_begin = $year.'-'.($month).'-'.$fecha_ant['fecha_inicio'];
+    $fecha_end = $year.'-'.($month).'-'.$fecha_ant['fecha_fin'];
+
+	$key = $db->select_corte(array('id_empresa'=>$id_empresa,
+	 'id_banco'=>$id_banco,'fecha_ini'=>$fecha_begin, 'fecha_fin'=>$fecha_end));
+	//echo $key->id_empresa.'--'.$key->id_banco.'---'. ($key->total_saldo) .'<br>';
+	if(isset($key->total_saldo)):
+		$total_saldo = $key->total_saldo; 
+	endif;
+	return $total_saldo;
+}
+
+
+function pendiente_retorno($db, $id_empresa, $id_banco, $fecha_ini = null, $fecha_fin = null)
 {
-	switch ($month) {
-		case 1:
-			$mes = 'Enero';
-			break;
-		case 2:
-			$mes = 'Febrero';
-			break;
-		case 3:
-			$mes = 'Marzo';
-			break;
-		case 4:
-			$mes = 'Abril';
-			break;
-		case 5:
-			$mes = 'Mayo ';
-			break;
-		case 6:
-			$mes = 'Junio';
-			break;
-		case 7:
-			$mes = 'Julio';
-			break;
-		case 8:
-			$mes = 'Agosto';
-			break;
-		case 9:
-			$mes = 'Septiembre';
-			break;
-		case 10:
-			$mes = 'Octubre';
-			break;
-		case 12:
-			$mes = 'Noviembre';
-			break;
-		case 12:
-			$mes = 'Diciembre';
-			break;
-	}
-	return $mes;
+		$key = $db->select_pendiente_retorno(array('id_empresa' => $id_empresa, 'id_banco' => $id_banco));
+	return $key;
+}
+function pendiente_retorno_empresa($db, $filtro)
+{
+	$key = $db->select_pendiente_retorno($filtro);
+	return $key;
+}
+
+function depositos_generales ($db, $id_empresa, $id_banco, $fecha_ini = null, $fecha_fin = null)
+{	
+	//print_r($id_empresa);exit();
+	$key = $db->sum_depositos( $id_empresa, $id_banco, $fecha_ini , $fecha_fin);
+	//print_r($key);exit();
+	if(!empty($key->total_deposito) ):
+		return $key->total_deposito;
+	else:
+		return '0';
+	endif;
+}
+
+function salidas_generales ($db, $id_empresa, $id_banco, $fecha_ini = null, $fecha_fin = null)
+{	
+	//print_r($id_empresa);exit();
+	$key = $db->sum_salidas( $id_empresa, $id_banco, $fecha_ini , $fecha_fin);
+	//echo $key->total_salida;
+	//exit();
+	if(!empty($key->total_salida) ):
+		return $key->total_salida;
+	else:
+		return '0';
+	endif;
 }

@@ -12,13 +12,14 @@ class Caja_chica extends CI_Controller
 
 		$fecha = fechas_rango_inicio(date('m'));
 
+
 		$fecha_ini = ($this->input->post('fecha_inicio')) ? formato_fecha_ddmmaaaa($this->input->post('fecha_inicio')) : $fecha['fecha_inicio'] ;
 		$fecha_fin = ($this->input->post('fecha_final')) ? formato_fecha_ddmmaaaa($this->input->post('fecha_final')) : $fecha['fecha_fin'] ;
-
+		
 		$filtro = array('adc.id_empresa' => $datos_empresa->id_empresa, 'adc.id_banco' => $datos_empresa->id_banco);
 
 		//$data['movimientos'] 	= $this->movimiento_model->lista_movimientos($filtro, $fecha_ini, $fecha_fin);
-		$data['movimientos'] 	= $this->movimiento_model->lista_movimientos($filtro, '', '');
+		$data['movimientos'] 	= $this->movimiento_model->lista_movimientos($filtro, $fecha_ini, $fecha_fin);
 		$data['db_mov'] 	= $this->movimiento_model;
 		$data['menu'] 		= 'menu/menu_admin';
 		$data['empresa']	= $datos_empresa;
@@ -50,6 +51,7 @@ class Caja_chica extends CI_Controller
 			$array = array('fecha_deposito' => formato_fecha_ddmmaaaa($this->input->post('fecha_depto')),
 			 				'monto_deposito' => $this->input->post('monto_depto'),
 			 				'folio_depto'	=> 	$folio_mov);
+
 			$reg = $this->depositos_model->registra_depto($array);
 
 			$datos = array(	'id_empresa'		=>	$id_empresa,
@@ -79,6 +81,35 @@ class Caja_chica extends CI_Controller
 
 			$this->load->view('layer/layerout', $data);
 		endif;
+	}
+
+	public function saldo_caja_chica()
+	{
+		$this->load->model('cuentas/caja_chica_model', 'caja_model');
+		$this->load->helper('funciones_externas_helper');
+		$this->load->helper('utilerias');
+
+		$month 	= ( $this->input->post('mes') < 10)? '0'.$this->input->post('mes'): $this->input->post('mes');
+
+		$year 	= $this->input->post('ano');
+		$date_now = $year.'-'.$month;
+
+		$deposito = $this->caja_model->total_depositos($date_now);
+		$salida   = $this->caja_model->total_salida($date_now);
+		$saldo 	  = $deposito->total_deposito - $salida->total_salida;
+
+		$deposito_gral 		= $this->caja_model->total_depositos_gral();
+		$salida_gral  		= $this->caja_model->total_salida_gral();
+		$saldo_disponible 	= $deposito_gral->total_deposito - $salida_gral->total_salida;
+
+		$data[] = array('deposito' => convierte_moneda($deposito->total_deposito), 
+						'salida' =>convierte_moneda($salida->total_salida),
+						'saldo' => convierte_moneda($saldo), 
+						'deposito_gral' => convierte_moneda($deposito_gral->total_deposito),
+						'salida_gral' => convierte_moneda($salida_gral->total_salida),
+						'saldo_disponible' => convierte_moneda($saldo_disponible));
+		//print_r($data);exit;
+		echo json_encode($data);
 	}
 
 	################ Callback ################################

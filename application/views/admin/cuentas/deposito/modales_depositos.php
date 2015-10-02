@@ -90,8 +90,8 @@ function pagos(id_empresa, id_banco, id_deposito)
                 </table>
             </div>
             <div class="modal-footer">
-                <a id="agregar_pago" class="btn btn-sm" >Agregar pago</a>
-                <button type="button" class="btn btn-sm" data-dismiss="modal">Cerrar</button>
+                <a id="agregar_pago" class="btn btn-info" >Agregar pago</a>
+                <button type="button" class="btn btn-grey" data-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -175,7 +175,8 @@ function pagos_detalle(id_empresa, id_banco, id_deposito)
 
 <script type="text/javascript">
 function abre_ventana(id_pago){
-window.open("<?=base_url()?>cuentas/pagos/detalle_pago/"+ id_pago,"","width=600,height=450,toolbar=no,scrollbars=yes");
+//window.open("<?=base_url()?>cuentas/pagos/detalle_pago/"+ id_pago,"","width=600,height=500,toolbar=no,scrollbars=yes");
+window.open("<?=base_url()?>cuentas/pagos/detalle_pago/"+ id_pago,"","width=600,height=500,toolbar=no,scrollbars=yes");
     
 }
 </script>

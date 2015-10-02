@@ -1,11 +1,11 @@
 <ul class="list-unstyled side-menu">
     <li>
-        <a class="" href="<?=base_url($this->session->userdata('base_perfil'))?>">
+        <a class="" href="<?=base_url('admin/dashboard')?>">
             <i class="glyphicon glyphicon-home fa-lg" style="margin-top:10px"></i>
             <span class="menu-item">Inicio</span>
         </a>
     </li>
-<?php if($this->session->userdata('consulta')== 'inactive'): ?>
+
     <li>
         <a class="" href="<?=base_url('catalogos/banks')?>">
             <i class="fa fa-credit-card fa-lg" style="margin-top:10px"></i>
@@ -62,7 +62,7 @@
             <!--<li><a href="form-components.html">Form Components</a></li>-->
         </ul>
     </li>
-<?php endif;?>
+    
     <li >
         <a href="<?=base_url('login/logout')?>" class="text-center" >
             <i class="fa fa-power-off fa-lg" style="margin-top:10px"></i>

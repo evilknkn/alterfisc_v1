@@ -22,6 +22,15 @@ class Depositos extends CI_controller
 		$data = array(	'menu' 	=>  'menu/menu_admin',
 						'body'	=>	'admin/cuentas/deposito/lista_depositos');
 
+		$fecha = fechas_rango_inicio(date('m'));
+
+		//$data['fecha_ini'] = ($this->input->post('fecha_inicio')) ? formato_fecha_ddmmaaaa($this->input->post('fecha_inicio')) : $fecha['fecha_inicio'] ;
+		//$data['fecha_fin'] = ($this->input->post('fecha_final')) ? formato_fecha_ddmmaaaa($this->input->post('fecha_final')) : $fecha['fecha_fin'] ;
+		
+		$data['fecha_ini'] = '2015-03-01';#($this->input->post('fecha_inicio')) ? '2015-03-01' : $fecha['fecha_inicio'] ;
+		$data['fecha_fin'] = '2015-03-31';#($this->input->post('fecha_final')) ? '2015-03-31' : $fecha['fecha_fin'] ;
+		
+
 		$data['empresas'] 	= $this->depositos_model->lista_empresas(array('ace.tipo_usuario' => 1));
 		$data['db']			= $this->depositos_model;
 		$data['db_mov']		= $this->movimiento_model;
@@ -45,6 +54,9 @@ class Depositos extends CI_controller
 
 		$fecha_ini = ($this->input->post('fecha_inicio')) ? formato_fecha_ddmmaaaa($this->input->post('fecha_inicio')) : $fecha['fecha_inicio'] ;
 		$fecha_fin = ($this->input->post('fecha_final')) ? formato_fecha_ddmmaaaa($this->input->post('fecha_final')) : $fecha['fecha_fin'] ;
+		# creamos la session con la fecha de detalle para generar el archivo excel 
+		$array_session = array('fecha_ini_depositos' => $fecha_ini, 'fecha_fin_depositos' => $fecha_fin);
+		$this->session->set_userdata($array_session);
 
 		$datos_empresa = $this->depositos_model->empresa(array('ace.id_empresa' => $id_empresa, 'acb.id_banco' => $id_banco));
 		$data['empresa'] = $datos_empresa;
@@ -67,6 +79,8 @@ class Depositos extends CI_controller
 	{
 		$this->load->model('cuentas/depositos_model');
 		$this->load->model('cuentas/detalle_cuenta_model');
+		$this->load->model('cuentas/retorno_model');
+		$this->load->helper('funciones_externas');
 
 		$empresa = $this->depositos_model->empresa(array('ace.id_empresa' => $id_empresa));
 
@@ -90,6 +104,17 @@ class Depositos extends CI_controller
 
 			$this->detalle_cuenta_model->insert_movimiento($datos);
 
+			#Se inserta en la tabla de pendiente de retorno 
+			$data_pendiente	= array('id_empresa' 		=> $id_empresa,
+									'id_banco'	 		=> $banco,
+									'id_deposito' 		=> $reg, 
+									'folio_deposito'	=> trim($this->input->post('folio_depto')),
+									'fecha_movimiento'	=> formato_fecha_ddmmaaaa($this->input->post('fecha_depto')),
+									'monto_deposito'	=> $this->input->post('monto_depto'), 
+									'pendiente_retornar' => $this->input->post('monto_depto') );
+
+			$this->retorno_model->insert_deposito($data_pendiente);
+			//print_r($data_pendiente);exit;
 
 			$array  = array('id_user'   =>  $this->session->userdata('ID_USER') ,
                             'accion'    =>  'El usuario '.$this->session->userdata('USERNAME'). ' registró  un deposito por '.$this->input->post('monto_depto').' a la empresa '. $empresa->nombre_empresa.' en banco '. $empresa->nombre_banco.' con folio '.trim($this->input->post('folio_depto')).'.' ,
@@ -115,6 +140,8 @@ class Depositos extends CI_controller
 	{
 		$this->load->model('cuentas/depositos_model');
 		$this->load->model('cuentas/detalle_cuenta_model');
+		$this->load->model('cuentas/retorno_model');
+		$this->load->helper('funciones_externas');
 
 		$empresa = $this->depositos_model->empresa(array('ace.id_empresa' => $id_empresa));
 		$dt_deposito = $this->depositos_model->detalle_deposito(array('adc.id_empresa'=>$id_empresa, 'adc.id_banco' => $id_banco, 'ad.id_deposito' => $id_deposito));
@@ -124,8 +151,13 @@ class Depositos extends CI_controller
 		$this->form_validation->set_rules('folio_depto' ,'folio', 'required|trim|callback_unique_folio_other');
 
 		if($this->form_validation->run()):
-
+			
 			$dt_depositos = array(	'fecha_movimiento' 	=>  formato_fecha_ddmmaaaa($this->input->post('fecha_depto')), 'folio_mov' => $this->input->post('folio_depto'));
+			$dt_pendiente = $this->retorno_model->select_pendiente_retorno_empresa(array('id_deposito' => $id_deposito));
+
+			$pendiente = $this->input->post('monto_depto') - ($dt_pendiente->comision + $dt_pendiente->total_pagos) ;
+
+			//print_r($pendiente);exit;
 
 			$this->depositos_model->actualiza_detalle_cuenta($dt_depositos, $id_detalle);
 
@@ -134,6 +166,13 @@ class Depositos extends CI_controller
 								'folio_depto'  		=> $this->input->post('folio_depto'));
 
 			$this->depositos_model->actualiza_deposito($deposito, $id_deposito);
+
+			$data_pendiente = array('monto_deposito' 	=> 	$this->input->post('monto_depto') ,
+									'fecha_movimiento'	=> 	formato_fecha_ddmmaaaa($this->input->post('fecha_depto')),
+									'folio_deposito'	=> 	$this->input->post('folio_depto'),
+									'pendiente_retornar'=> 	$pendiente);
+
+			$this->retorno_model->update_pendiente_retorno($data_pendiente, array('id_deposito' => $id_deposito));
 
 			$array  = array('id_user'   =>  $this->session->userdata('ID_USER') ,
                             'accion'    =>  'El usuario '.$this->session->userdata('USERNAME'). ' modificó el deposito con folio '.$this->input->post('folio_depto').' los datos anteriores eran: no. folio '.$dt_deposito->folio_depto.', monto '.$dt_deposito->monto_deposito.', fecha deldepto '.$dt_deposito->folio_depto.' de la empresa '. $dt_deposito->nombre_empresa.' en banco '. $dt_deposito->nombre_banco.'.' ,
@@ -187,11 +226,13 @@ class Depositos extends CI_controller
 		endif;
 	}
 
-	public function add_pagos($id_empresa, $id_banco, $id_deposito)
+	public function add_pagos($id_empresa, $id_banco, $id_deposito, $url_gral = null)
 	{ 
 		//date('Y-m-d');
 		$this->load->model('cuentas/depositos_model');
 		$this->load->model('catalogo/empresas_model');
+		$this->load->model('cuentas/retorno_model');
+		$this->load->helper('funciones_externas');
 
 		$empresa = $this->depositos_model->empresa(array('ace.id_empresa' => $id_empresa, 'acb.id_banco' => $id_banco));
 
@@ -205,7 +246,9 @@ class Depositos extends CI_controller
 		$this->form_validation->set_message('required', 'El campo %s es requerido');
 
 		if($this->form_validation->run()):
+			$info_depto = $this->retorno_model->select_pendiente_retorno_empresa(array('id_deposito' => $id_deposito,'id_empresa' => $id_empresa, 'id_banco' => $id_banco));
 
+			# Inserta deposito a la tabla ad_deposito_pago
 			$array = array('id_empresa' 			=> 	$id_empresa,
 							'id_banco' 				=> 	$id_banco,
 							'id_deposito'			=> 	$id_deposito,
@@ -214,13 +257,15 @@ class Depositos extends CI_controller
 							'banco_retorno'			=> 	$this->input->post('id_banco'),
 							'folio_pago'			=>	trim($this->input->post('folio_pago')),
 							'ruta_comprobante'		=>	$this->input->post('ruta_comprobante'),
-							'fecha_pago'			=> formato_fecha_ddmmaaaa($this->input->post('fecha_pago')));
+							'fecha_pago'			=>  formato_fecha_ddmmaaaa($this->input->post('fecha_pago')));
 
 			$this->depositos_model->insert_pago($array);
 
+			# Agregamos la salida con los id de empresa de retorno  a la tabla ad_salidas
 			$array = array('fecha_salida' => formato_fecha_ddmmaaaa($this->input->post('fecha_pago')),
 							'monto_salida' => $this->input->post('monto'),
-							'folio_salida'	=> 	trim($this->input->post('folio_pago')));
+							'folio_salida'	=> 	trim($this->input->post('folio_pago')),
+							'detalle_salida' => 'Se realizó un pago a la empresa '.$empresa->nombre_empresa.' en el banco '.$empresa->nombre_banco.' por la cantidad de '.$this->input->post('monto'). ' al depósito con folio '.$info_depto->folio_deposito );
 
 			$reg = $this->depositos_model->insert_salida($array);
 
@@ -233,6 +278,17 @@ class Depositos extends CI_controller
 
 			$this->depositos_model->insert_movimiento($datos);
 
+			#Se inserta en la tabla de pendiente de retorno 
+			#treaemos todos los pagos hechos
+			$pago = total_pagos($this->retorno_model, $id_empresa, $id_banco, $id_deposito);
+			$pendiente = $info_depto->monto_deposito - ($info_depto->comision + $pago) ;
+
+			$data_pendiente	= array('total_pagos'			=> $pago, 	
+									'pendiente_retornar' 	=> $pendiente );
+
+			$this->retorno_model->update_pendiente_retorno($data_pendiente,array('id_deposito' => $id_deposito,'id_empresa' => $id_empresa, 'id_banco' => $id_banco));
+
+
 			$array  = array('id_user'   =>  $this->session->userdata('ID_USER') ,
                             'accion'    =>  'El usuario '.$this->session->userdata('USERNAME'). ' registró  un pago en el depósito con folio '.trim($this->input->post('folio_pago')).' con un monto de '.$this->input->post('monto_depto').' en la empresa '. $empresa->nombre_empresa.' del banco '. $empresa->nombre_banco.'.' ,
                             'lugar'     =>  'Pago',
@@ -242,7 +298,11 @@ class Depositos extends CI_controller
 
 			
 			$this->session->set_flashdata('success', 'Pago agregado correctamente.');
-			redirect(base_url('cuentas/depositos/detalle_cuenta/'.$id_empresa.'/'.$id_banco));
+			if($url_gral ==1):
+				redirect(base_url('cuentas/pendiente_retorno/pendiente_retorno_general'));
+			else:
+				redirect(base_url('cuentas/depositos/detalle_cuenta/'.$id_empresa.'/'.$id_banco));
+			endif;
 		
 		else:
 			$data = array(	'menu' 	=>  'menu/menu_admin',
@@ -253,6 +313,7 @@ class Depositos extends CI_controller
 			$data['id_empresa'] = $id_empresa;
 			$data['id_banco']	= $id_banco;
 			$data['empresas']	= $this->empresas_model->lista_empresas();
+			$data['url_gral']   = $url_gral;
 		
 			$this->load->view('layer/layerout', $data);
 		endif;
@@ -271,23 +332,23 @@ class Depositos extends CI_controller
 		$total = 0;
 		$cont = 1 ;
 		for($i=0; $i<sizeof($pagos); $i++):
-			$cont = $cont + $i;
+			//$cont = $cont + $i;
 			$pago = convierte_moneda($pagos[$i]->monto_pago);
 			$fecha = formato_fecha_ddmmaaaa($pagos[$i]->fecha_pago);
 
 			$total = $total + $pagos[$i]->monto_pago;
 			echo "<tr>
-				<td class='text-center'> Pago ".$cont."</td>
+				<td class='text-center'> Pago ".($i+1)."</td>
 				<td class='text-center'>".$pago."</td>
 				<td class='text-center'>".$fecha."</td>
-				<td class='text-center'><a href='".base_url($pagos[$i]->ruta_comprobante)."' target='_blank' class='btn'>Ver comprobante</a></td>
+				<td class='text-center'><a href='".base_url($pagos[$i]->ruta_comprobante)."' target='_blank' class='btn btn-yellow'>Ver comprobante</a></td>
 				<td class='text-center'>
 				<a onclick='abre_ventana(".$pagos[$i]->id_pago.")' style ='cursor:pointer' >
 					<i class='fa fa-search' ></i>
 				</a>
 				</td>
 				<td class='text-center'>
-					<a href='".base_url('cuentas/mov_delete/pago/'.$pagos[$i]->id_pago)."'>
+					<a href='".base_url('cuentas/mov_delete/pago/'.$this->input->post('id_empresa').'/'.$this->input->post('id_banco').'/'.$pagos[$i]->id_pago)."'>
 						<i class='fa fa-trash fa-lg'></i>
 					</a>
 				</td>
@@ -350,10 +411,28 @@ class Depositos extends CI_controller
 	public function asigna_cliente()
 	{	
 		$this->load->model('cuentas/depositos_model');
+		$this->load->model('cuentas/retorno_model');
+		$this->load->helper('funciones_externas');
 
 		$data = array('id_cliente' => $this->input->post('id_cliente'));
 		$filtro= array('id_deposito'=> $this->input->post('id_deposito'));
+
 		$this->depositos_model->actualiza_cliente($filtro, $data);
+		$depto = $this->depositos_model->info_deposito($this->input->post('id_deposito'));
+		$pagos = $this->retorno_model->select_pendiente_retorno_empresa(array('id_deposito' => $this->input->post('id_deposito')));
+		//print_r($depto);exit();
+
+		$comision = genera_comision($this->retorno_model, $this->input->post('id_cliente'), $depto->monto_deposito);
+		$pendiente_retorno = $pagos->monto_deposito - ($pagos->total_pagos + $comision);
+
+		$this->retorno_model->update_pendiente_retorno(array('comision' => round($comision,2), 'pendiente_retornar' => $pendiente_retorno ) , array('id_deposito' => $this->input->post('id_deposito') ));
+		//print_r($comision);exit;
+		$array  = array('id_user'   =>  $this->session->userdata('ID_USER') ,
+                            'accion'    =>  'El usuario '.$this->session->userdata('USERNAME'). ' asigno al cliente con el id '.trim($this->input->post('id_cliente')).' en el deposito con id '.$this->input->post('id_deposito'),
+                            'lugar'     =>  'Deatalle_deposito/Deposito/asigna_cliente',
+                            'usuario'   =>  $this->session->userdata('USERNAME'));
+
+        $this->bitacora_model->insert_log($array);
 
 		echo "exito";
 	}
